@@ -23,30 +23,31 @@
         .title-font { font-family: 'Press Start 2P', cursive; }
         .hidden { display: none; }
 
-        /* Efeito de Borda RGB Animada */
-        @keyframes rgb-border-animation {
-            0% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
-            25% { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
-            50% { border-color: #0000ff; box-shadow: 0 0 10px #0000ff; }
-            75% { border-color: #ff00ff; box-shadow: 0 0 10px #ff00ff; }
-            100% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+        /* Efeito de Borda Laranja */
+        .orange-glow-border { 
+            border: 2px solid #f97316;
+            box-shadow: 0 0 10px #f97316;
         }
-        .rgb-border { border: 2px solid; animation: rgb-border-animation 4s linear infinite; }
 
         /* Estilos do Painel */
-        .dashboard-card-bg { background-color: rgba(20, 20, 30, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(0, 170, 255, 0.3); }
-        .dashboard-progress-bar-bg { background-color: #2c2c54; }
-        .dashboard-progress-bar-fill { background: linear-gradient(90deg, #be29ec, #00aaff); transition: width 0.5s ease-in-out; }
+        .dashboard-card-bg { background-color: #1f2937; border: 1px solid #4b5563; }
+        .mission-card { transition: all 0.3s ease; }
+        .mission-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px #f97316;
+        }
+        .dashboard-progress-bar-bg { background-color: #374151; }
+        .dashboard-progress-bar-fill { background: #f97316; transition: width 0.5s ease-in-out; }
         
         /* Efeito de Pintura nos Cards */
         .kingdom-card { 
-            border: 2px solid #4a2a6c; 
+            border: 2px solid #4b5563; 
             cursor: pointer; 
             transition: all 0.3s ease; 
             position: relative;
             overflow: hidden;
             z-index: 1;
-            background-color: rgba(26, 26, 46, 0.7);
+            background-color: #1f2937;
         }
         .kingdom-card::before {
             content: '';
@@ -66,8 +67,8 @@
         }
         .kingdom-card:not(.locked):hover { 
             transform: translateY(-10px); 
-            border-color: #be29ec; 
-            box-shadow: 0 0 15px #be29ec, 0 0 25px #be29ec; 
+            border-color: #fb923c; 
+            box-shadow: 0 0 15px #fb923c, 0 0 25px #fb923c; 
         }
         .kingdom-card.locked {
             filter: grayscale(80%) brightness(0.7);
@@ -78,19 +79,14 @@
         }
         
         /* Estilos do Quiz e Usabilidade */
-        .challenge-card-bg { background-color: rgba(30, 27, 52, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(192, 132, 252, 0.3); box-shadow: 0 0 15px rgba(192, 132, 252, 0.1); }
-        .challenge-neon-text-purple { color: #d8b4fe; text-shadow: 0 0 7px #be29ec, 0 0 12px #be29ec; }
-        .challenge-neon-text-green { color: #86efac; text-shadow: 0 0 5px #22c55e, 0 0 8px #22c55e; }
-        .challenge-neon-text-red { color: #fca5a5; text-shadow: 0 0 5px #ef4444, 0 0 8px #ef4444; }
-        .neon-border-green { border: 1px solid #4ade80; box-shadow: 0 0 8px #4ade80; }
-        .neon-border-red { border: 1px solid #f87171; box-shadow: 0 0 8px #f87171; }
-        .option-btn { border: 2px solid #4a2a6c; transition: all 0.2s ease-in-out; }
-        .option-btn:hover:not(:disabled) { background-color: #4a2a6c; border-color: #a855f7; }
+        .challenge-card-bg { background-color: #1f2937; border: 1px solid #4b5563; }
+        .option-btn { border: 2px solid #4b5563; transition: all 0.2s ease-in-out; }
+        .option-btn:hover:not(:disabled) { background-color: #374151; border-color: #f97316; }
         .option-btn.correct { background-color: #16a34a; border-color: #4ade80; color: white; }
         .option-btn.incorrect { background-color: #dc2626; border-color: #f87171; color: white; }
-        .question-list-item.correct { background-color: #166534; color: #dcfce7; border-left-color: #4ade80; }
-        .question-list-item.incorrect { background-color: #991b1b; color: #fee2e2; border-left-color: #f87171; }
-        .question-list-item.current { background-color: #4a2a6c; border-left-color: #a855f7; }
+        .question-list-item.correct { background-color: #14532d; color: #dcfce7; border-left-color: #4ade80; }
+        .question-list-item.incorrect { background-color: #7f1d1d; color: #fee2e2; border-left-color: #f87171; }
+        .question-list-item.current { background-color: #374151; border-left-color: #f97316; }
 
         /* Modal de Aviso */
         .modal-overlay {
@@ -98,20 +94,17 @@
             background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
             display: flex; justify-content: center; align-items: center; z-index: 1000;
         }
-        .modal-content {
-            padding: 2rem; border-radius: 1rem; text-align: center;
-        }
     </style>
 </head>
 <body class="antialiased">
 
     <!-- Menu de Navegação Global -->
-    <nav class="bg-black/30 backdrop-filter backdrop-blur-lg p-4 sticky top-0 z-50">
+    <nav class="bg-black/50 backdrop-filter backdrop-blur-lg p-4 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
             <a href="#" id="nav-logo" class="text-xl text-white title-font">Creativity Quest</a>
             <div class="space-x-6">
-                <a href="#" id="nav-inicio" class="text-gray-300 hover:text-white transition-colors">Início</a>
-                <a href="#" id="nav-tutorial" class="text-gray-300 hover:text-white transition-colors">Tutorial</a>
+                <a href="#" id="nav-inicio" class="text-gray-300 hover:text-orange-400 transition-colors">Início</a>
+                <a href="#" id="nav-tutorial" class="text-gray-300 hover:text-orange-400 transition-colors">Tutorial</a>
             </div>
         </div>
     </nav>
@@ -120,12 +113,12 @@
     <div id="main-container" class="p-4 sm:p-6 lg:p-8">
         <!-- Visualização do Painel Principal -->
         <div id="dashboard-view">
-            <header id="main-header" class="max-w-7xl mx-auto w-full flex flex-col sm:flex-row justify-between items-center mb-8 p-4 rounded-xl dashboard-card-bg rgb-border">
+            <header id="main-header" class="max-w-7xl mx-auto w-full flex flex-col sm:flex-row justify-between items-center mb-8 p-4 rounded-xl dashboard-card-bg orange-glow-border">
                 <div class="flex items-center space-x-4 mb-4 sm:mb-0">
-                    <img src="https://placehold.co/80x80/111111/ffffff?text=AV" alt="Avatar do Jogador" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-cyan-400">
+                    <img src="https://placehold.co/80x80/000000/ffffff?text=AV" alt="Avatar do Jogador" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-orange-400">
                     <div>
                         <h1 class="text-lg sm:text-2xl font-bold text-white title-font">Player_1</h1>
-                        <p class="text-sm text-cyan-400">Iniciante Criativo</p>
+                        <p class="text-sm text-orange-400">Iniciante Criativo</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-4 sm:space-x-6">
@@ -135,7 +128,7 @@
                     </div>
                     <div class="w-32 sm:w-40">
                         <p class="text-xs sm:text-sm text-gray-400 mb-1 title-font">XP</p>
-                        <div class="w-full rounded-full h-3 sm:h-4 dashboard-progress-bar-bg border border-purple-500">
+                        <div class="w-full rounded-full h-3 sm:h-4 dashboard-progress-bar-bg border border-gray-600">
                             <div id="player-xp-bar" class="dashboard-progress-bar-fill h-full rounded-full" style="width: 0%"></div>
                         </div>
                         <p id="player-xp-text" class="text-xs text-right mt-1 text-gray-400">0 / 1000 XP</p>
@@ -145,22 +138,23 @@
             <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="lg:col-span-1 space-y-8">
                     <section>
-                        <h2 class="text-base text-amber-300 title-font">Missões Especiais</h2>
-                        <div class="p-5 mt-2 rounded-lg dashboard-card-bg">
-                            <h3 class="font-bold text-lg text-amber-300">O Desafio do Chefão</h3>
+                        <h2 class="text-base text-orange-400 title-font">Missões Especiais</h2>
+                        <div class="p-5 mt-2 rounded-lg dashboard-card-bg mission-card" style="--neon-color: #f97316;">
+                            <h3 class="font-bold text-lg text-orange-400">O Desafio do Chefão</h3>
                             <p class="text-sm text-gray-300 mt-2">Um projeto complexo que testará todas as suas habilidades.</p>
+                            <button id="start-narrative-btn" class="w-full mt-4 bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 px-4 rounded-lg title-font text-sm transition-colors">Começar</button>
                         </div>
                     </section>
                      <section>
                         <h2 class="text-base text-cyan-400 title-font">Missões Diárias</h2>
-                        <div class="p-5 mt-2 rounded-lg dashboard-card-bg">
-                            <h3 class="font-bold text-lg text-cyan-300">Logo Minimalista</h3>
+                        <div class="p-5 mt-2 rounded-lg dashboard-card-bg mission-card" style="--neon-color: #0ea5e9;">
+                            <h3 class="font-bold text-lg text-cyan-400">Logo Minimalista</h3>
                             <p class="text-sm text-gray-300 mt-2">Crie um logo para uma cafeteria espacial. Tempo: 12h</p>
                         </div>
                     </section>
                 </div>
                 <div class="lg:col-span-2">
-                    <h2 class="text-xl sm:text-2xl mb-4 text-white title-font text-purple-400">Mapa do Mundo</h2>
+                    <h2 class="text-xl sm:text-2xl mb-4 text-white title-font text-orange-400">Mapa do Mundo</h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div id="enter-kingdom-btn" class="kingdom-card h-48 sm:h-64 rounded-lg" style="--paint-color: #8e44ad;">
                             <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
@@ -196,7 +190,7 @@
         <!-- Visualização do Tutorial -->
         <div id="tutorial-view" class="hidden">
             <div class="max-w-4xl mx-auto dashboard-card-bg p-8 rounded-lg">
-                <h1 class="text-3xl md:text-4xl text-center title-font challenge-neon-text-purple mb-8">📖 Tutorial do Creativity Quest</h1>
+                <h1 class="text-3xl md:text-4xl text-center title-font text-orange-400 mb-8">📖 Tutorial do Creativity Quest</h1>
                 <div class="space-y-6 text-gray-300">
                     <section>
                         <h2 class="text-2xl font-bold text-white mb-2">Bem-vindo, Aventureiro!</h2>
@@ -211,9 +205,9 @@
                         <h2 class="text-2xl font-bold text-white mb-2">Os Reinos 🗺️</h2>
                         <p>Cada reino no mapa oferece um tipo diferente de provação:</p>
                         <ul class="list-disc list-inside mt-2 space-y-2">
-                            <li><strong class="text-purple-300">🎨 Reino Gráfico:</strong> Um quiz para testar seus conhecimentos teóricos. Cada acerto vale <strong class="text-white">200 XP</strong>.</li>
-                            <li><strong class="text-green-300">🧑‍💻 Usabilidade na Prática:</strong> Desafios práticos de UX. Cada acerto vale <strong class="text-white">400 XP</strong>. Cuidado: após 10 acertos, cada erro custará <strong class="text-red-400">250 XP</strong>! <span class="text-gray-400">(Requer Nível 7)</span></li>
-                            <li><strong class="text-red-300">🌈 Caminho das Cores:</strong> Uma prova de alto risco. Cada acerto vale <strong class="text-white">700 XP</strong>, mas cada erro custa <strong class="text-red-400">850 XP</strong> desde o início! <span class="text-gray-400">(Requer Nível 14)</span></li>
+                            <li><strong class="text-purple-400">Reino Gráfico:</strong> Um quiz para testar seus conhecimentos teóricos. Cada acerto vale <strong class="text-white">200 XP</strong>.</li>
+                            <li><strong class="text-green-400">Usabilidade na Prática:</strong> Desafios práticos de UX. Cada acerto vale <strong class="text-white">400 XP</strong>. Cuidado: após 10 acertos, cada erro custará <strong class="text-red-400">250 XP</strong>! <span class="text-gray-400">(Requer Nível 7)</span></li>
+                            <li><strong class="text-red-400">Caminho das Cores:</strong> Uma prova de alto risco. Cada acerto vale <strong class="text-white">700 XP</strong>, mas cada erro custa <strong class="text-red-400">850 XP</strong> desde o início! <span class="text-gray-400">(Requer Nível 14)</span></li>
                         </ul>
                     </section>
                      <section>
@@ -230,10 +224,10 @@
     
     <!-- Modal de Aviso -->
     <div id="penalty-modal" class="modal-overlay hidden">
-        <div class="modal-content challenge-card-bg rgb-border">
-            <h2 class="text-2xl title-font challenge-neon-text-red mb-4">Atenção!</h2>
+        <div class="modal-content challenge-card-bg orange-glow-border">
+            <h2 class="text-2xl title-font text-orange-400 mb-4">Atenção!</h2>
             <p id="penalty-modal-text" class="text-lg mb-6"></p>
-            <button id="close-modal-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-6 rounded-lg title-font">Entendido</button>
+            <button id="close-modal-btn" class="bg-orange-600 hover:bg-orange-500 text-white font-bold py-2 px-6 rounded-lg title-font">Entendido</button>
         </div>
     </div>
 
@@ -262,6 +256,9 @@
         document.getElementById('enter-colors-btn').addEventListener('click', (e) => {
             if(e.currentTarget.classList.contains('locked')) return;
             showView('colors');
+        });
+        document.getElementById('start-narrative-btn').addEventListener('click', () => {
+             showView('narrative_rpg');
         });
         closeModalBtn.addEventListener('click', () => penaltyModal.classList.add('hidden'));
 
@@ -302,6 +299,7 @@
             if (challengeName === 'quiz') initializeQuiz();
             else if (challengeName === 'usability') initializeUsabilityTest();
             else if (challengeName === 'colors') initializeColorChallenge();
+            else if (challengeName === 'narrative_rpg') initializeNarrativeRPG();
         }
 
         const xpToLevelUp = 1000;
@@ -319,7 +317,7 @@
             const main = document.getElementById('challenge-main');
             const header = document.getElementById('challenge-header');
             const title = document.createElement('h1');
-            title.className = 'text-3xl md:text-4xl text-center title-font text-purple-300';
+            title.className = 'text-3xl md:text-4xl text-center title-font text-purple-400';
             title.innerHTML = '🎨 Reino Gráfico';
             header.insertBefore(title, header.firstChild.nextSibling);
 
@@ -385,7 +383,7 @@
         function showQuizFinalScore() {
             const quizArea = document.getElementById('quiz-area');
             const correctAnswersCount = quizState.playerAnswers.filter(a => a === 'correct').length;
-            quizArea.innerHTML = `<div class="text-center"><h2 class="text-3xl title-font text-purple-300 mb-4">🎉 Quiz Concluído!</h2><p class="text-xl mb-2">Você acertou ${correctAnswersCount} de ${graphicQuestions.length}.</p><p class="text-2xl font-bold mb-6">XP Ganho: ${quizState.xp}</p><button onclick="initializeQuiz()" class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Jogar Novamente</button></div>`;
+            quizArea.innerHTML = `<div class="text-center"><h2 class="text-3xl title-font text-purple-400 mb-4">🎉 Quiz Concluído!</h2><p class="text-xl mb-2">Você acertou ${correctAnswersCount} de ${graphicQuestions.length}.</p><p class="text-2xl font-bold mb-6">XP Ganho: ${quizState.xp}</p><button onclick="initializeQuiz()" class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Jogar Novamente</button></div>`;
         }
 
         // --- LÓGICA DO TESTE DE USABILIDADE ---
@@ -428,7 +426,7 @@
             const main = document.getElementById('challenge-main');
             const header = document.getElementById('challenge-header');
             const title = document.createElement('h1');
-            title.className = 'text-3xl md:text-4xl text-center title-font text-green-300';
+            title.className = 'text-3xl md:text-4xl text-center title-font text-green-400';
             title.innerHTML = '🧑‍💻 Usabilidade na Prática';
             header.insertBefore(title, header.firstChild.nextSibling);
 
@@ -502,7 +500,7 @@
         
         function showUsabilityFinalScore() {
             const area = document.getElementById('usability-area');
-            area.innerHTML = `<div class="text-center"><h2 class="text-2xl title-font text-green-300">🎉 Testes Concluídos!</h2><p class="mt-4">Você acertou ${usabilityState.correctAnswersCount} de ${usabilityChallenges.length} e seu saldo de XP foi de ${usabilityState.xp}!</p><button onclick="initializeUsabilityTest()" class="mt-6 bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Tentar Novamente</button></div>`;
+            area.innerHTML = `<div class="text-center"><h2 class="text-2xl title-font text-green-400">🎉 Testes Concluídos!</h2><p class="mt-4">Você acertou ${usabilityState.correctAnswersCount} de ${usabilityChallenges.length} e seu saldo de XP foi de ${usabilityState.xp}!</p><button onclick="initializeUsabilityTest()" class="mt-6 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Tentar Novamente</button></div>`;
         }
         
         // --- LÓGICA DO CAMINHO DAS CORES ---
@@ -555,7 +553,7 @@
             const main = document.getElementById('challenge-main');
             const header = document.getElementById('challenge-header');
             const title = document.createElement('h1');
-            title.className = 'text-3xl md:text-4xl text-center title-font text-red-300';
+            title.className = 'text-3xl md:text-4xl text-center title-font text-red-400';
             title.innerHTML = '🌈 Caminho das Cores';
             header.insertBefore(title, header.firstChild.nextSibling);
 
@@ -621,9 +619,124 @@
 
         function showColorFinalScore() {
             const area = document.getElementById('colors-area');
-            area.innerHTML = `<div class="text-center"><h2 class="text-2xl title-font text-red-300">🎉 Desafio das Cores Concluído!</h2><p class="mt-4">Seu saldo de XP neste desafio foi de ${colorState.xp}!</p><button onclick="initializeColorChallenge()" class="mt-6 bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Tentar Novamente</button></div>`;
+            area.innerHTML = `<div class="text-center"><h2 class="text-2xl title-font text-red-400">🎉 Desafio das Cores Concluído!</h2><p class="mt-4">Seu saldo de XP neste desafio foi de ${colorState.xp}!</p><button onclick="initializeColorChallenge()" class="mt-6 bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Tentar Novamente</button></div>`;
         }
         
+        // --- LÓGICA DO RPG NARRATIVO ---
+        const narrativeStory = {
+            start: {
+                text: "Você é um designer júnior em uma agência de publicidade. Seu diretor criativo, um homem intimidador chamado Klaus, joga um briefing na sua mesa. 'A 'Quantum Cola', nossa nova cliente, quer uma campanha de lançamento. O slogan é 'O Sabor do Amanhã'. Eles querem algo... revolucionário.'",
+                choices: [
+                    { text: "Aceitar o desafio com confiança.", nextId: 'concept_phase', xp: 50 },
+                    { text: "Pedir mais detalhes sobre o público-alvo.", nextId: 'ask_questions', xp: 100 }
+                ]
+            },
+            ask_questions: {
+                text: "Klaus levanta uma sobrancelha. 'Boa pergunta. Eles querem atingir a Geração Z. Jovens, antenados, que valorizam autenticidade e tecnologia.' Essa informação é valiosa. Você se sente mais preparado.",
+                choices: [
+                    { text: "Começar a pesquisar tendências visuais da Geração Z.", nextId: 'concept_phase', xp: 150 }
+                ]
+            },
+            concept_phase: {
+                text: "Com o briefing em mãos, você precisa definir o conceito visual. Qual caminho seguir?",
+                choices: [
+                    { text: "Um visual futurista, com neon, gradientes e elementos 3D.", nextId: 'futuristic_path', xp: 200 },
+                    { text: "Uma abordagem retrô-futurista, misturando nostalgia com tecnologia.", nextId: 'retro_path', xp: 200 },
+                    { text: "Focar na 'autenticidade', com fotos reais e uma pegada mais orgânica.", nextId: 'organic_path', xp: 200 }
+                ]
+            },
+            futuristic_path: {
+                text: "Você cria um moodboard incrível com visuais de ficção científica e cyberpunk. Klaus aprova, mas avisa: 'Cuidado para não parecer genérico'. O cliente adora a modernidade, mas pede para 'humanizar' um pouco.",
+                choices: [
+                    { text: "Adicionar modelos sorrindo em meio à tecnologia.", nextId: 'final_positive', xp: 300 },
+                    { text: "Manter o foco na tecnologia, ignorando o pedido.", nextId: 'final_negative', xp: -100 }
+                ]
+            },
+            retro_path: {
+                text: "Sua ideia de misturar o visual dos anos 80 com elementos modernos é ousada. Klaus fica intrigado. O cliente acha 'interessante, mas talvez um pouco confuso para o público jovem'.",
+                choices: [
+                    { text: "Simplificar a paleta de cores e modernizar as fontes.", nextId: 'final_positive', xp: 400 },
+                    { text: "Insistir na sua visão original, defendendo a complexidade.", nextId: 'final_neutral', xp: 100 }
+                ]
+            },
+            organic_path: {
+                text: "Você aposta em fotos de pessoas reais se divertindo, com uma tipografia manuscrita. Klaus acha 'seguro demais'. O cliente gosta, mas diz que não reflete 'O Sabor do Amanhã'.",
+                choices: [
+                    { text: "Propor uma sessão de fotos com um toque tecnológico.", nextId: 'final_neutral', xp: 250 },
+                    { text: "Descartar a ideia e começar do zero.", nextId: 'concept_phase', xp: -50 }
+                ]
+            },
+            final_positive: {
+                text: "A campanha é um sucesso estrondoso! A mistura de modernidade com um toque humano conquistou o público. Você é elogiado por toda a agência e ganha um bônus generoso de XP!",
+                choices: [
+                    { text: "Agradecer a equipe e começar um novo desafio.", nextId: 'end', xp: 1000 }
+                ]
+            },
+            final_neutral: {
+                text: "A campanha foi bem recebida, mas não causou o impacto 'revolucionário' que o cliente esperava. Foi um bom trabalho, mas sem grandes destaques. Você aprendeu muito no processo.",
+                choices: [
+                    { text: "Analisar os resultados e seguir para o próximo projeto.", nextId: 'end', xp: 500 }
+                ]
+            },
+            final_negative: {
+                text: "A campanha foi ao ar, mas foi criticada por ser 'fria e sem alma'. O cliente ficou insatisfeito e a agência perdeu a conta. Klaus está furioso. Você perdeu XP e sua reputação foi abalada.",
+                choices: [
+                    { text: "Aprender com o erro e tentar novamente.", nextId: 'end', xp: -500 }
+                ]
+            },
+            end: {
+                text: "Fim do Desafio do Chefão. Parabéns por concluir a missão!",
+                choices: []
+            }
+        };
+        let narrativeState = {};
+
+        function initializeNarrativeRPG() {
+            narrativeState = { currentSceneId: 'start' };
+            const main = document.getElementById('challenge-main');
+            const header = document.getElementById('challenge-header');
+            const title = document.createElement('h1');
+            title.className = 'text-3xl md:text-4xl text-center title-font text-amber-400';
+            title.innerHTML = '🌟 O Desafio do Chefão';
+            header.insertBefore(title, header.firstChild.nextSibling);
+
+            main.innerHTML = `<section id="narrative-area" class="w-full challenge-card-bg p-8 rounded-lg flex flex-col justify-center items-center"></section>`;
+            displayNarrativeScene(narrativeState.currentSceneId);
+        }
+
+        function displayNarrativeScene(sceneId) {
+            const scene = narrativeStory[sceneId];
+            const area = document.getElementById('narrative-area');
+            if (!scene || !area) return;
+
+            area.innerHTML = `
+                <div class="max-w-2xl text-center">
+                    <p class="text-lg leading-relaxed mb-8">${scene.text}</p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        ${scene.choices.map(choice => `
+                            <button class="option-btn p-4 rounded-lg" data-next-id="${choice.nextId}" data-xp="${choice.xp || 0}">
+                                ${choice.text}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            if (scene.choices.length === 0) {
+                 setTimeout(() => showView('dashboard'), 4000);
+            }
+
+            document.querySelectorAll('#narrative-area .option-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const nextId = e.currentTarget.dataset.nextId;
+                    const xpGained = parseInt(e.currentTarget.dataset.xp);
+                    totalXp = Math.max(0, totalXp + xpGained);
+                    updateDashboardUI();
+                    displayNarrativeScene(nextId);
+                });
+            });
+        }
+
         function updateDashboardUI() {
             const level = Math.floor(totalXp / xpToLevelUp);
             const currentXP = totalXp % xpToLevelUp;
