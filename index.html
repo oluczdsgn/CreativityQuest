@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creativity Quest - Painel do Jogador</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Poppins & Press Start 2P for retro feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Estilos Globais */
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: #000000;
+            color: #ffffff; 
+        }
+        .title-font { font-family: 'Press Start 2P', cursive; }
+        .hidden { display: none; }
+
+        /* Efeito de Borda RGB Animada */
+        @keyframes rgb-border-animation {
+            0% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+            25% { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
+            50% { border-color: #0000ff; box-shadow: 0 0 10px #0000ff; }
+            75% { border-color: #ff00ff; box-shadow: 0 0 10px #ff00ff; }
+            100% { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+        }
+        .rgb-border { border: 2px solid; animation: rgb-border-animation 4s linear infinite; }
+
+        /* Estilos do Painel */
+        .dashboard-card-bg { background-color: rgba(20, 20, 30, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(0, 170, 255, 0.3); }
+        .dashboard-progress-bar-bg { background-color: #2c2c54; }
+        .dashboard-progress-bar-fill { background: linear-gradient(90deg, #be29ec, #00aaff); transition: width 0.5s ease-in-out; }
+        
+        /* Efeito de Pintura nos Cards */
+        .kingdom-card { 
+            border: 2px solid #4a2a6c; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            background-color: rgba(26, 26, 46, 0.7);
+        }
+        .kingdom-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--paint-color);
+            transform-origin: bottom;
+            transform: scaleY(0);
+            transition: transform 0.4s ease-out;
+            z-index: -1;
+        }
+        .kingdom-card:hover::before {
+            transform: scaleY(1);
+        }
+        .kingdom-card:not(.locked):hover { 
+            transform: translateY(-10px); 
+            border-color: #be29ec; 
+            box-shadow: 0 0 15px #be29ec, 0 0 25px #be29ec; 
+        }
+        .kingdom-card.locked {
+            filter: grayscale(80%) brightness(0.7);
+            cursor: not-allowed;
+        }
+        .kingdom-card.locked:hover::before {
+             transform: scaleY(0);
+        }
+        
+        /* Estilos do Quiz e Usabilidade */
+        .challenge-card-bg { background-color: rgba(30, 27, 52, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(192, 132, 252, 0.3); box-shadow: 0 0 15px rgba(192, 132, 252, 0.1); }
+        .challenge-neon-text-purple { color: #d8b4fe; text-shadow: 0 0 7px #be29ec, 0 0 12px #be29ec; }
+        .challenge-neon-text-green { color: #86efac; text-shadow: 0 0 5px #22c55e, 0 0 8px #22c55e; }
+        .challenge-neon-text-red { color: #fca5a5; text-shadow: 0 0 5px #ef4444, 0 0 8px #ef4444; }
+        .neon-border-green { border: 1px solid #4ade80; box-shadow: 0 0 8px #4ade80; }
+        .neon-border-red { border: 1px solid #f87171; box-shadow: 0 0 8px #f87171; }
+        .option-btn { border: 2px solid #4a2a6c; transition: all 0.2s ease-in-out; }
+        .option-btn:hover:not(:disabled) { background-color: #4a2a6c; border-color: #a855f7; }
+        .option-btn.correct { background-color: #16a34a; border-color: #4ade80; color: white; }
+        .option-btn.incorrect { background-color: #dc2626; border-color: #f87171; color: white; }
+        .question-list-item.correct { background-color: #166534; color: #dcfce7; border-left-color: #4ade80; }
+        .question-list-item.incorrect { background-color: #991b1b; color: #fee2e2; border-left-color: #f87171; }
+        .question-list-item.current { background-color: #4a2a6c; border-left-color: #a855f7; }
+
+        /* Modal de Aviso */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.7); backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-content {
+            padding: 2rem; border-radius: 1rem; text-align: center;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Menu de Navegação Global -->
+    <nav class="bg-black/30 backdrop-filter backdrop-blur-lg p-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <a href="#" id="nav-logo" class="text-xl text-white title-font">Creativity Quest</a>
+            <div class="space-x-6">
+                <a href="#" id="nav-inicio" class="text-gray-300 hover:text-white transition-colors">Início</a>
+                <a href="#" id="nav-tutorial" class="text-gray-300 hover:text-white transition-colors">Tutorial</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container Principal para as Views -->
+    <div id="main-container" class="p-4 sm:p-6 lg:p-8">
+        <!-- Visualização do Painel Principal -->
+        <div id="dashboard-view">
+            <header id="main-header" class="max-w-7xl mx-auto w-full flex flex-col sm:flex-row justify-between items-center mb-8 p-4 rounded-xl dashboard-card-bg rgb-border">
+                <div class="flex items-center space-x-4 mb-4 sm:mb-0">
+                    <img src="https://placehold.co/80x80/111111/ffffff?text=AV" alt="Avatar do Jogador" class="w-12 h-12 sm:w-16 sm:h-16 rounded-full border-2 border-cyan-400">
+                    <div>
+                        <h1 class="text-lg sm:text-2xl font-bold text-white title-font">Player_1</h1>
+                        <p class="text-sm text-cyan-400">Iniciante Criativo</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4 sm:space-x-6">
+                    <div class="text-center">
+                        <p id="player-level" class="text-xs sm:text-sm text-gray-400 title-font">LVL</p>
+                        <p class="text-lg sm:text-2xl font-bold text-white title-font">0</p>
+                    </div>
+                    <div class="w-32 sm:w-40">
+                        <p class="text-xs sm:text-sm text-gray-400 mb-1 title-font">XP</p>
+                        <div class="w-full rounded-full h-3 sm:h-4 dashboard-progress-bar-bg border border-purple-500">
+                            <div id="player-xp-bar" class="dashboard-progress-bar-fill h-full rounded-full" style="width: 0%"></div>
+                        </div>
+                        <p id="player-xp-text" class="text-xs text-right mt-1 text-gray-400">0 / 1000 XP</p>
+                    </div>
+                </div>
+            </header>
+            <main class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-1 space-y-8">
+                    <section>
+                        <h2 class="text-base text-amber-300 title-font">Missões Especiais</h2>
+                        <div class="p-5 mt-2 rounded-lg dashboard-card-bg">
+                            <h3 class="font-bold text-lg text-amber-300">O Desafio do Chefão</h3>
+                            <p class="text-sm text-gray-300 mt-2">Um projeto complexo que testará todas as suas habilidades.</p>
+                        </div>
+                    </section>
+                     <section>
+                        <h2 class="text-base text-cyan-400 title-font">Missões Diárias</h2>
+                        <div class="p-5 mt-2 rounded-lg dashboard-card-bg">
+                            <h3 class="font-bold text-lg text-cyan-300">Logo Minimalista</h3>
+                            <p class="text-sm text-gray-300 mt-2">Crie um logo para uma cafeteria espacial. Tempo: 12h</p>
+                        </div>
+                    </section>
+                </div>
+                <div class="lg:col-span-2">
+                    <h2 class="text-xl sm:text-2xl mb-4 text-white title-font text-purple-400">Mapa do Mundo</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div id="enter-kingdom-btn" class="kingdom-card h-48 sm:h-64 rounded-lg" style="--paint-color: #8e44ad;">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                                <h3 class="text-sm sm:text-base font-bold text-white title-font">Reino Gráfico</h3>
+                                <p class="text-xs text-gray-200 mt-1">Domine a composição e cor.</p>
+                            </div>
+                        </div>
+                        <div id="enter-usability-btn" class="kingdom-card h-48 sm:h-64 rounded-lg" style="--paint-color: #27ae60;" data-level-req="7">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                                <h3 class="text-sm sm:text-base font-bold text-white title-font">Usabilidade Prática</h3>
+                                <p class="text-xs text-gray-200 mt-1">Teste seus conhecimentos em UX.</p>
+                            </div>
+                            <div class="lock-overlay absolute inset-0 bg-black/70 flex-row items-center justify-center hidden gap-2">
+                                <span class="text-3xl">🔒</span>
+                                <p class="text-xs title-font">Nível 7</p>
+                            </div>
+                        </div>
+                        <div id="enter-colors-btn" class="kingdom-card h-48 sm:h-64 rounded-lg" style="--paint-color: #e74c3c;" data-level-req="14">
+                            <div class="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                                <h3 class="text-sm sm:text-base font-bold text-white title-font">Caminho das Cores</h3>
+                                <p class="text-xs text-gray-200 mt-1">Um desafio de alto risco.</p>
+                            </div>
+                             <div class="lock-overlay absolute inset-0 bg-black/70 flex-row items-center justify-center hidden gap-2">
+                                <span class="text-3xl">🔒</span>
+                                <p class="text-xs title-font">Nível 14</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Visualização do Tutorial -->
+        <div id="tutorial-view" class="hidden">
+            <div class="max-w-4xl mx-auto dashboard-card-bg p-8 rounded-lg">
+                <h1 class="text-3xl md:text-4xl text-center title-font challenge-neon-text-purple mb-8">📖 Tutorial do Creativity Quest</h1>
+                <div class="space-y-6 text-gray-300">
+                    <section>
+                        <h2 class="text-2xl font-bold text-white mb-2">Bem-vindo, Aventureiro!</h2>
+                        <p>O Creativity Quest é uma jornada para aprimorar suas habilidades de design de uma forma divertida e desafiadora. Em vez de aulas tradicionais, você enfrentará missões em diferentes reinos, cada um focado em uma área do design.</p>
+                    </section>
+                    <section>
+                        <h2 class="text-2xl font-bold text-white mb-2">XP e Níveis 🏆</h2>
+                        <p>Tudo que você faz aqui rende Pontos de Experiência (XP). Ao completar missões e desafios, sua barra de XP no topo da tela irá encher. Quando ela estiver completa, você sobe de nível!</p>
+                        <p class="mt-2">Subir de nível é crucial, pois desbloqueia novos reinos e desafios mais complexos, com recompensas ainda maiores.</p>
+                    </section>
+                    <section>
+                        <h2 class="text-2xl font-bold text-white mb-2">Os Reinos 🗺️</h2>
+                        <p>Cada reino no mapa oferece um tipo diferente de provação:</p>
+                        <ul class="list-disc list-inside mt-2 space-y-2">
+                            <li><strong class="text-purple-300">🎨 Reino Gráfico:</strong> Um quiz para testar seus conhecimentos teóricos. Cada acerto vale <strong class="text-white">200 XP</strong>.</li>
+                            <li><strong class="text-green-300">🧑‍💻 Usabilidade na Prática:</strong> Desafios práticos de UX. Cada acerto vale <strong class="text-white">400 XP</strong>. Cuidado: após 10 acertos, cada erro custará <strong class="text-red-400">250 XP</strong>! <span class="text-gray-400">(Requer Nível 7)</span></li>
+                            <li><strong class="text-red-300">🌈 Caminho das Cores:</strong> Uma prova de alto risco. Cada acerto vale <strong class="text-white">700 XP</strong>, mas cada erro custa <strong class="text-red-400">850 XP</strong> desde o início! <span class="text-gray-400">(Requer Nível 14)</span></li>
+                        </ul>
+                    </section>
+                     <section>
+                        <h2 class="text-2xl font-bold text-white mb-2">Boa Sorte!</h2>
+                        <p>Explore, aprenda, suba de nível e construa um portfólio incrível. Sua jornada criativa começa agora!</p>
+                    </section>
+                </div>
+            </div>
+        </div>
+
+        <!-- Container para as Views de Desafio -->
+        <div id="challenge-container" class="hidden"></div>
+    </div>
+    
+    <!-- Modal de Aviso -->
+    <div id="penalty-modal" class="modal-overlay hidden">
+        <div class="modal-content challenge-card-bg rgb-border">
+            <h2 class="text-2xl title-font challenge-neon-text-red mb-4">Atenção!</h2>
+            <p id="penalty-modal-text" class="text-lg mb-6"></p>
+            <button id="close-modal-btn" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-2 px-6 rounded-lg title-font">Entendido</button>
+        </div>
+    </div>
+
+    <script>
+        // --- CONTROLE DE NAVEGAÇÃO E ESTADO GLOBAL ---
+        const mainContainer = document.getElementById('main-container');
+        const dashboardView = document.getElementById('dashboard-view');
+        const tutorialView = document.getElementById('tutorial-view');
+        const challengeContainer = document.getElementById('challenge-container');
+        const penaltyModal = document.getElementById('penalty-modal');
+        const penaltyModalText = document.getElementById('penalty-modal-text');
+        const closeModalBtn = document.getElementById('close-modal-btn');
+
+        document.getElementById('nav-logo').addEventListener('click', (e) => { e.preventDefault(); showView('dashboard'); });
+        document.getElementById('nav-inicio').addEventListener('click', (e) => { e.preventDefault(); showView('dashboard'); });
+        document.getElementById('nav-tutorial').addEventListener('click', (e) => { e.preventDefault(); showView('tutorial'); });
+        
+        document.getElementById('enter-kingdom-btn').addEventListener('click', (e) => {
+            if(e.currentTarget.classList.contains('locked')) return;
+            showView('quiz');
+        });
+        document.getElementById('enter-usability-btn').addEventListener('click', (e) => {
+            if(e.currentTarget.classList.contains('locked')) return;
+            showView('usability');
+        });
+        document.getElementById('enter-colors-btn').addEventListener('click', (e) => {
+            if(e.currentTarget.classList.contains('locked')) return;
+            showView('colors');
+        });
+        closeModalBtn.addEventListener('click', () => penaltyModal.classList.add('hidden'));
+
+        function showView(viewName) {
+            dashboardView.classList.add('hidden');
+            tutorialView.classList.add('hidden');
+            challengeContainer.classList.add('hidden');
+
+            if (viewName === 'dashboard') {
+                dashboardView.classList.remove('hidden');
+            } else if (viewName === 'tutorial') {
+                tutorialView.classList.remove('hidden');
+            } else {
+                challengeContainer.classList.remove('hidden');
+                loadChallenge(viewName);
+            }
+            updateDashboardUI();
+        }
+
+        function loadChallenge(challengeName) {
+            challengeContainer.innerHTML = `
+                <div class="h-full flex flex-col">
+                    <header id="challenge-header" class="max-w-7xl mx-auto w-full mb-6 relative"></header>
+                    <main id="challenge-main" class="max-w-7xl mx-auto flex-grow w-full flex flex-col lg:flex-row gap-6 overflow-hidden"></main>
+                </div>
+            `;
+            const challengeHeader = document.getElementById('challenge-header');
+            const clonedHeader = document.getElementById('main-header').cloneNode(true);
+            challengeHeader.appendChild(clonedHeader);
+            
+            const backButton = document.createElement('button');
+            backButton.innerHTML = '⬅️';
+            backButton.title = 'Voltar';
+            backButton.className = 'absolute left-0 top-1/2 -translate-y-1/2 text-2xl hover:scale-125 transition-transform';
+            backButton.onclick = () => showView('dashboard');
+            challengeHeader.appendChild(backButton);
+            
+            if (challengeName === 'quiz') initializeQuiz();
+            else if (challengeName === 'usability') initializeUsabilityTest();
+            else if (challengeName === 'colors') initializeColorChallenge();
+        }
+
+        const xpToLevelUp = 1000;
+        let totalXp = 0;
+
+        // --- LÓGICA DO QUIZ DE DESIGN GRÁFICO ---
+        const graphicQuestions = [
+            // 60 perguntas...
+            { question: "O que significa a sigla CMYK?", options: ["Cyan, Magenta, Yellow, Black", "Cyan, Magenta, Yellow, Key", "Blue, Magenta, Yellow, Key", "Cyan, Maroon, Yellow, Black"], answer: 1 }, { question: "Qual destes é um tipo de fonte com serifa?", options: ["Arial", "Helvetica", "Times New Roman", "Verdana"], answer: 2 }, { question: "O que é 'kerning' em tipografia?", options: ["O espaço entre todas as letras", "O espaço entre linhas de texto", "O ajuste do espaço entre pares de letras", "A altura de uma letra"], answer: 2 }, { question: "Qual formato de imagem é ideal para logotipos na web por ser vetorial?", options: [".JPG", ".GIF", ".PNG", ".SVG"], answer: 3 }, { question: "Na teoria das cores, qual é a cor complementar do Vermelho?", options: ["Azul", "Amarelo", "Verde", "Laranja"], answer: 2 }, { question: "O que a 'Regra dos Terços' ajuda a determinar?", options: ["A paleta de cores", "A hierarquia tipográfica", "A composição e o posicionamento de elementos", "O tamanho do arquivo"], answer: 2 }, { question: "Qual o significado da sigla 'UI' em design?", options: ["User Interaction", "User Interface", "Unique Identity", "Universal Integration"], answer: 1 }, { question: "O que é um 'moodboard'?", options: ["Um painel de código", "Um painel de referências visuais e de inspiração", "Uma paleta de cores", "Um teste de usabilidade"], answer: 1 }, { question: "Qual software é mais utilizado para design de interfaces (UI/UX)?", options: ["Adobe Photoshop", "Adobe Illustrator", "Figma", "Blender"], answer: 2 }, { question: "O que é 'resolução' em uma imagem digital?", options: ["O número de cores", "O tamanho físico", "A quantidade de pixels por polegada (PPI/DPI)", "O formato do arquivo"], answer: 2 }, { question: "Qual movimento de design popularizou 'menos é mais'?", options: ["Art Nouveau", "Bauhaus", "Pop Art", "Art Déco"], answer: 1 }, { question: "O que é um gradiente?", options: ["Uma cor sólida", "Uma transição suave entre duas ou mais cores", "Um padrão repetitivo", "Uma textura"], answer: 1 }, { question: "Qual a principal diferença entre Vetor e Raster?", options: ["Vetor usa pixels", "Vetor não perde qualidade ao ser redimensionado", "Raster é sempre preto e branco", "Vetor é para fotos"], answer: 1 }, { question: "O que é 'hierarquia visual'?", options: ["Organizar elementos para mostrar a ordem de importância", "Usar apenas fontes da mesma família", "Colocar tudo no centro", "Deixar simétrico"], answer: 0 }, { question: "Qual a função do 'espaço em branco'?", options: ["Uma área a ser preenchida", "Ajuda a criar foco, equilíbrio e legibilidade", "Lugar para o logo", "Indica um erro"], answer: 1 }, { question: "O que é um 'wireframe'?", options: ["A versão final de um site", "Um esboço de baixa fidelidade da estrutura", "Um teste de cores", "Uma animação"], answer: 1 }, { question: "O sistema de cores RGB é para qual mídia?", options: ["Impressão", "Mídias digitais (telas)", "Bordados", "Pintura a óleo"], answer: 1 }, { question: "O que é um 'logotipo'?", options: ["Qualquer imagem de uma empresa", "Um símbolo gráfico que representa uma marca", "O nome da empresa", "A paleta de cores"], answer: 1 }, { question: "Qual a finalidade de um grid system?", options: ["Apenas para revistas", "Criar desordem", "Alinhar elementos e criar estrutura", "Escolher as cores"], answer: 2 }, { question: "O que é 'tipografia responsiva'?", options: ["Fonte que muda de cor", "Texto que se ajusta a diferentes telas", "Fonte que só funciona em celular", "Usar uma única fonte"], answer: 1 }, { question: "O que é 'leading' ou 'entrelinha'?", options: ["Espaço entre palavras", "Espaço vertical entre linhas de texto", "Espaço entre letras", "A espessura da fonte"], answer: 1 }, { question: "Qual o formato de cor usado para impressão?", options: ["RGB", "HEX", "HSL", "CMYK"], answer: 3 }, { question: "A 'Psicologia das Cores' estuda como...", options: ["As cores se misturam", "As cores afetam as emoções e percepções humanas", "Imprimir cores corretamente", "Criar paletas de cores"], answer: 1 }, { question: "O que é um 'mockup'?", options: ["Um protótipo funcional", "Uma representação visual de como um design ficará em um contexto real", "Um esboço inicial", "O código-fonte de um site"], answer: 1 }, { question: "Qual destes NÃO é um princípio do design?", options: ["Contraste", "Repetição", "Complexidade", "Alinhamento"], answer: 2 }, { question: "O que é 'branding'?", options: ["Apenas criar um logo", "A gestão e construção de uma marca", "Escolher fontes para um site", "Fazer um cartão de visita"], answer: 1 }, { question: "Qual a resolução padrão para imagens na web?", options: ["300 DPI", "150 DPI", "72 DPI", "1000 DPI"], answer: 2 }, { question: "O que é um 'glifo' em tipografia?", options: ["Uma família de fontes completa", "Uma representação específica de um caractere", "O nome de uma fonte", "Um erro de digitação"], answer: 1 }, { question: "O que são cores análogas?", options: ["Cores opostas no círculo cromático", "Cores que estão lado a lado no círculo cromático", "Tons diferentes da mesma cor", "Apenas preto e branco"], answer: 1 }, { question: "Para que serve a ferramenta 'Pen Tool' (Caneta)?", options: ["Para pintar livremente", "Para apagar partes de uma imagem", "Para criar curvas e formas vetoriais precisas", "Para escrever texto"], answer: 2 }, { question: "O que é 'opacidade'?", options: ["O brilho de um elemento", "O nível de transparência de um elemento", "O tamanho de um elemento", "A cor de um elemento"], answer: 1 }, { question: "Qual destes é um exemplo de design simétrico?", options: ["Um layout caótico", "Um design onde um lado espelha o outro", "Um design com muitos elementos", "Um design com poucas colores"], answer: 1 }, { question: "O que é 'UX Design'?", options: ["O design da aparência de um produto", "O design da experiência geral do usuário com um produto", "O design do logo", "O design da embalagem"], answer: 1 }, { question: "Um arquivo .AI é nativo de qual software?", options: ["Figma", "Adobe Photoshop", "Adobe Illustrator", "CorelDRAW"], answer: 2 }, { question: "O que é 'tracking' ou 'espaçamento de caracteres'?", options: ["O ajuste uniforme do espaço entre todas as letras de uma palavra", "O espaço entre palavras", "O espaço entre parágrafos", "Ajustar o espaço de um par de letras"], answer: 0 }, { question: "Qual a função de uma 'máscara de camada' (layer mask)?", options: ["Deletar pixels permanentemente", "Esconder ou revelar partes de uma camada de forma não destrutiva", "Mudar a cor da camada", "Duplicar uma camada"], answer: 1 }, { question: "O que é a 'Proporção Áurea'?", options: ["Uma regra sobre cores", "Uma proporção matemática encontrada na natureza, usada para criar composições harmoniosas", "Um tipo de fonte", "Uma técnica de impressão"], answer: 1 }, { question: "O que é 'flat design'?", options: ["Um estilo com muito 3D e texturas", "Um estilo de design minimalista, sem efeitos de profundidade ou sombras", "Um design para panfletos", "Um design com muitas cores vibrantes"], answer: 1 }, { question: "Qual o atalho comum para 'Copiar'?", options: ["Ctrl + X", "Ctrl + V", "Ctrl + C", "Ctrl + P"], answer: 2 }, { question: "O que é um 'favicon'?", options: ["Um ícone grande no centro da página", "O logo principal de um site", "Um pequeno ícone que aparece na aba do navegador", "Um tipo de fonte"], answer: 2 }, { question: "O que é 'Skeuomorphism'?", options: ["Design minimalista", "Design que imita objetos do mundo real", "Design com cores neon", "Design em preto e branco"], answer: 1 }, { question: "Qual é a principal função do contraste no design?", options: ["Tornar tudo da mesma cor", "Chamar atenção para elementos específicos e melhorar a legibilidade", "Deixar o design confuso", "Usar o menor número de cores possível"], answer: 1 }, { question: "O que é um 'briefing'?", options: ["O contrato final", "A fatura do projeto", "Um documento com todas as informações e requisitos de um projeto", "Uma reunião de feedback"], answer: 2 }, { question: "Qual a diferença entre 'font' e 'typeface'?", options: ["Nenhuma, são a mesma coisa", "Font é o arquivo, typeface é a família de design (ex: Helvetica)", "Typeface é o arquivo, font é a família", "Font é para web, typeface para impressão"], answer: 1 }, { question: "O que é 'pixel art'?", options: ["Arte vetorial", "Arte digital onde as imagens são criadas no nível do pixel", "Fotografia de alta resolução", "Pintura a óleo digital"], answer: 1 }, { question: "O que é 'saturação' de uma cor?", options: ["O brilho da cor", "A intensidade ou pureza da cor", "A temperatura da cor", "A transparência da cor"], answer: 1 }, { question: "Qual o objetivo de um 'call to action' (CTA)?", options: ["Decorar a página", "Instruir o usuário a realizar uma ação específica", "Aumentar o tamanho do texto", "Esconder informações"], answer: 1 }, { question: "O que é um 'vetor'?", options: ["Uma imagem baseada em pixels", "Uma imagem baseada em equações matemáticas que pode ser escalada infinitamente", "Um tipo de filtro de foto", "Uma imagem borrada"], answer: 1 }, { question: "O que é a 'Gestalt' no design?", options: ["Um software de design", "Uma teoria sobre como os humanos percebem o todo a partir das partes", "Uma técnica de impressão", "Um tipo de paleta de cores"], answer: 1 }, { question: "Qual o código hexadecimal para a cor preta?", options: ["#FFFFFF", "#000000", "#FF0000", "#00FF00"], answer: 1 }, { question: "O que é um 'brand guide' ou manual de marca?", options: ["Um guia de como usar o software", "Um documento que define as regras de uso da identidade visual de uma marca", "O portfólio do designer", "A lista de preços da empresa"], answer: 1 }, { question: "Qual o atalho comum para 'Desfazer'?", options: ["Ctrl + Y", "Ctrl + S", "Ctrl + Z", "Ctrl + D"], answer: 2 }, { question: "O que é 'mobile-first'?", options: ["Desenvolver um site primeiro para telas grandes e depois adaptar", "Desenvolver um site primeiro para celulares e depois para telas maiores", "Um site que só funciona em celular", "Um aplicativo de celular"], answer: 1 }, { question: "O que é 'serifa'?", options: ["O espaço entre as letras", "Um pequeno traço ou prolongamento no final das hastes de uma letra", "Uma fonte sem detalhes", "A espessura da letra"], answer: 1 }, { question: "Qual destes NÃO é um formato de vídeo?", options: [".MP4", ".MOV", ".WEBM", ".SVG"], answer: 3 }, { question: "O que é 'Lorem Ipsum'?", options: ["O nome de um designer famoso", "Um texto padrão usado como preenchimento de layout", "Um tipo de licença de software", "Um erro de código"], answer: 1 }, { question: "O que é 'acessibilidade' em design digital?", options: ["Garantir que o site seja bonito", "Garantir que pessoas com deficiência possam usar o site", "Deixar o site mais rápido", "Usar muitas animações"], answer: 1 }, { question: "O que é 'DPI'?", options: ["Dots Per Inch (Pontos por Polegada), para impressão", "Digital Pixel Index, para web", "Design Process Improvement", "Data Per Image"], answer: 0 }, { question: "Qual a cor primária que falta: Vermelho, Amarelo e...?", options: ["Verde", "Laranja", "Roxo", "Azul"], answer: 3 }, { question: "O que é um 'ícone'?", options: ["Uma fotografia detalhada", "Uma representação gráfica simplificada de um objeto ou ação", "Um parágrafo de texto", "Uma animação complexa"], answer: 1 }
+        ];
+        let quizState = {};
+
+        function initializeQuiz() {
+            quizState = { currentQuestionIndex: 0, xp: 0, playerAnswers: [] };
+            const main = document.getElementById('challenge-main');
+            const header = document.getElementById('challenge-header');
+            const title = document.createElement('h1');
+            title.className = 'text-3xl md:text-4xl text-center title-font text-purple-300';
+            title.innerHTML = '🎨 Reino Gráfico';
+            header.insertBefore(title, header.firstChild.nextSibling);
+
+            main.innerHTML = `
+                <aside class="w-full lg:w-1/4 challenge-card-bg p-4 rounded-lg overflow-y-auto">
+                    <h2 class="title-font text-lg mb-4 text-center">📜 Perguntas</h2>
+                    <ul id="question-list" class="space-y-2"></ul>
+                </aside>
+                <section id="quiz-area" class="w-full lg:w-3/4 challenge-card-bg p-6 sm:p-8 rounded-lg flex flex-col justify-center"></section>
+            `;
+            const questionList = document.getElementById('question-list');
+            graphicQuestions.forEach((_, index) => {
+                const li = document.createElement('li');
+                li.id = `q-item-${index}`;
+                li.className = 'question-list-item p-2 rounded-md border-l-4 border-gray-600 bg-gray-700/50';
+                li.textContent = `Pergunta ${index + 1}`;
+                questionList.appendChild(li);
+            });
+            updateQuizUI();
+            displayQuizQuestion();
+        }
+
+        function displayQuizQuestion() {
+            const quizArea = document.getElementById('quiz-area');
+            if (quizState.currentQuestionIndex >= graphicQuestions.length) { showQuizFinalScore(); return; }
+            document.querySelectorAll('#question-list .question-list-item').forEach(el => el.classList.remove('current'));
+            document.getElementById(`q-item-${quizState.currentQuestionIndex}`)?.classList.add('current');
+            const q = graphicQuestions[quizState.currentQuestionIndex];
+            quizArea.innerHTML = `
+                <h2 class="text-xl md:text-2xl font-bold mb-6 text-center">${q.question}</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    ${q.options.map((option, index) => `<button data-index="${index}" class="option-btn p-4 rounded-lg text-left">${option}</button>`).join('')}
+                </div>
+            `;
+            document.querySelectorAll('#quiz-area .option-btn').forEach(button => button.addEventListener('click', handleQuizAnswer));
+        }
+
+        function handleQuizAnswer(event) {
+            const selectedOption = event.target;
+            const selectedAnswerIndex = parseInt(selectedOption.dataset.index);
+            const correctAnswerIndex = graphicQuestions[quizState.currentQuestionIndex].answer;
+            const isCorrect = selectedAnswerIndex === correctAnswerIndex;
+            const listItem = document.getElementById(`q-item-${quizState.currentQuestionIndex}`);
+            document.querySelectorAll('#quiz-area .option-btn').forEach(btn => btn.disabled = true);
+
+            if (isCorrect) {
+                totalXp += 200; quizState.xp += 200;
+                quizState.playerAnswers[quizState.currentQuestionIndex] = 'correct';
+                selectedOption.classList.add('correct');
+                listItem.classList.remove('current'); listItem.classList.add('correct');
+            } else {
+                quizState.playerAnswers[quizState.currentQuestionIndex] = 'incorrect';
+                selectedOption.classList.add('incorrect');
+                document.querySelector(`#quiz-area .option-btn[data-index="${correctAnswerIndex}"]`).classList.add('correct');
+                listItem.classList.remove('current'); listItem.classList.add('incorrect');
+            }
+            updateQuizUI();
+            setTimeout(() => { quizState.currentQuestionIndex++; displayQuizQuestion(); }, 2000);
+        }
+
+        function updateQuizUI() { updateDashboardUI(); }
+
+        function showQuizFinalScore() {
+            const quizArea = document.getElementById('quiz-area');
+            const correctAnswersCount = quizState.playerAnswers.filter(a => a === 'correct').length;
+            quizArea.innerHTML = `<div class="text-center"><h2 class="text-3xl title-font text-purple-300 mb-4">🎉 Quiz Concluído!</h2><p class="text-xl mb-2">Você acertou ${correctAnswersCount} de ${graphicQuestions.length}.</p><p class="text-2xl font-bold mb-6">XP Ganho: ${quizState.xp}</p><button onclick="initializeQuiz()" class="bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Jogar Novamente</button></div>`;
+        }
+
+        // --- LÓGICA DO TESTE DE USABILIDADE ---
+        const usabilityChallenges = [
+             { type: 'question', text: "Qual princípio de design se refere a agrupar elementos relacionados?", options: ["Proximidade", "Contraste", "Repetição", "Alinhamento"], answer: 0 },
+            { type: 'question', text: "A Lei de Hick sugere que...", options: ["O tempo para tomar uma decisão aumenta com o número de escolhas", "Elementos próximos são percebidos como um grupo", "Usuários preferem sites bonitos", "O contraste deve ser alto"], answer: 0 },
+            { type: 'question', text: "O que é um 'dark pattern' em UX?", options: ["Um tema escuro para o site", "Um padrão de design que engana o usuário", "Um erro de código", "Um layout de alta complexidade"], answer: 1 },
+            { type: 'question', text: "Qual a principal função de um teste A/B?", options: ["Testar a velocidade do site", "Verificar a segurança", "Comparar duas versões de uma página para ver qual tem melhor desempenho", "Encontrar bugs no código"], answer: 2 },
+            { type: 'exercise', question: "Qual botão tem melhor contraste?", options: [`<button class="w-full p-3 rounded-lg bg-yellow-500 text-white">Opção A</button>`, `<button class="w-full p-3 rounded-lg bg-yellow-300 text-gray-800">Opção B</button>`], answer: 0 },
+            { type: 'question', text: "O que a sigla 'CTA' representa?", options: ["Customer Task Analysis", "Call to Action", "Creative Text Alignment", "Color Theory Application"], answer: 1 },
+            { type: 'question', text: "Qual o objetivo da heurística 'Visibilidade do status do sistema'?", options: ["O sistema deve sempre manter os usuários informados sobre o que está acontecendo", "O sistema deve ser bonito", "O sistema deve ter um modo escuro", "O sistema deve ser rápido"], answer: 0 },
+            { type: 'question', text: "O que é 'design responsivo'?", options: ["Um design que responde rápido aos cliques", "Um design que se adapta a diferentes tamanhos de tela", "Um design com muitas animações", "Um design emocionalmente envolvente"], answer: 1 },
+            { type: 'question', text: "A Lei de Fitts está relacionada a quê?", options: ["Ao tempo para atingir um alvo com base no tamanho e distância", "À escolha de cores", "À hierarquia de fontes", "À velocidade de carregamento"], answer: 0 },
+            { type: 'exercise', question: "Qual formulário é mais fácil de preencher?", options: [`<div><label class="block mb-1">Nome</label><input class="w-full bg-gray-700 p-2 rounded"><label class="block mt-2 mb-1">Email</label><input class="w-full bg-gray-700 p-2 rounded"></div>`, `<div><input class="w-full bg-gray-700 p-2 rounded mb-3" placeholder="Nome"><input class="w-full bg-gray-700 p-2 rounded" placeholder="Email"></div>`], answer: 0 },
+            { type: 'question', text: "Em UX, o que é uma 'persona'?", options: ["Um usuário real que testa o produto", "Um personagem fictício que representa um grupo de usuários", "O designer principal do projeto", "Um tipo de teste de usabilidade"], answer: 1 },
+            { type: 'question', text: "O que é 'card sorting'?", options: ["Um jogo de cartas", "Uma técnica para organizar a arquitetura da informação de um site", "Um método para escolher cores", "Um tipo de animação"], answer: 1 },
+            { type: 'question', text: "Qual a finalidade de um 'mapa de jornada do usuário'?", options: ["Criar um mapa do site", "Visualizar a experiência completa de um usuário com um produto", "Desenhar o layout da página", "Escolher as imagens"], answer: 1 },
+            { type: 'question', text: "O que significa 'affordance' em design?", options: ["O custo de um projeto", "As propriedades de um objeto que mostram como ele pode ser usado", "A beleza de um design", "A velocidade de interação"], answer: 1 },
+            { type: 'exercise', question: "Qual ícone para 'Salvar' é mais universal?", options: [`<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>`, `<svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" /></svg>`], answer: 1 },
+            { type: 'question', text: "O que é 'feedback' no contexto de UI?", options: ["A opinião do chefe sobre o design", "A resposta do sistema a uma ação do usuário", "Um comentário em rede social", "A cor de um botão"], answer: 1 },
+            { type: 'question', text: "Qual a importância do 'contraste' para a acessibilidade?", options: ["Nenhuma", "Garante que o texto seja legível para pessoas com baixa visão", "Deixa o site mais colorido", "Aumenta o tamanho das imagens"], answer: 1 },
+            { type: 'question', text: "O que é um 'protótipo de alta fidelidade'?", options: ["Um rascunho em papel", "Um modelo interativo que se parece e funciona como o produto final", "A primeira ideia do projeto", "O código do site"], answer: 1 },
+            { type: 'question', text: "A Lei de Miller se refere à capacidade humana de...", options: ["Lembrar de cerca de 7 itens na memória de curto prazo", "Ler textos longos rapidamente", "Distinguir cores", "Clicar em alvos pequenos"], answer: 0 },
+            { type: 'exercise', question: "Qual link é mais claro sobre seu destino?", options: [`<a href="#" class="text-cyan-400">Clique aqui</a>`, `<a href="#" class="text-cyan-400">Veja nosso relatório de 2024</a>`], answer: 1 },
+            { type: 'question', text: "O que é 'gamificação'?", options: ["Desenvolver um jogo", "Usar elementos de jogos em contextos não-lúdicos", "Jogar durante o trabalho", "Um tipo de teste de software"], answer: 1 },
+            { type: 'question', text: "Qual o propósito de um 'style guide'?", options: ["Contar a história da empresa", "Definir padrões de design (cores, fontes, etc.) para consistência", "Listar os funcionários", "Um guia de como usar o site"], answer: 1 },
+            { type: 'question', text: "O que é 'onboarding' de usuário?", options: ["O processo de login", "O processo de apresentar e guiar um novo usuário pelo produto", "A página de contato", "A política de privacidade"], answer: 1 },
+            { type: 'question', text: "O que a heurística 'Flexibilidade e eficiência de uso' sugere?", options: ["O sistema deve ser bom tanto para novatos quanto para experientes (com atalhos, etc.)", "O sistema deve ser flexível no preço", "O sistema deve funcionar em qualquer celular", "O sistema deve ter muitas opções"], answer: 0 },
+            { type: 'exercise', question: "Qual mensagem de erro é mais útil?", options: [`<p class="text-red-500">Erro!</p>`, `<p class="text-red-500">Senha inválida. Tente novamente.</p>`], answer: 1 },
+            { type: 'question', text: "O que é um 'heatmap'?", options: ["Um mapa de temperatura", "Uma representação visual de onde os usuários mais clicam ou olham em uma página", "Um tipo de paleta de cores quentes", "Um efeito de brilho"], answer: 1 },
+            { type: 'question', text: "Qual o problema da 'falsa affordance'?", options: ["Um elemento parece clicável, mas não é", "Um elemento é muito caro", "Um elemento é feio", "Um elemento é muito lento"], answer: 0 },
+            { type: 'question', text: "O que é 'design centrado no usuário'?", options: ["O usuário desenha o site", "Uma abordagem de design focada nas necessidades e desejos do usuário", "Um design onde o usuário fica no centro da tela", "Um tipo de rede social"], answer: 1 },
+            { type: 'question', text: "Por que o 'espaço negativo' é importante?", options: ["Para economizar tinta na impressão", "Ele não é importante", "Para dar respiro, melhorar a legibilidade e criar foco", "Para colocar anúncios"], answer: 2 },
+            { type: 'exercise', question: "Qual estado de 'foco' é mais claro para acessibilidade?", options: [`<input class="bg-gray-700 p-2 rounded">`, `<input class="bg-gray-700 p-2 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none">`], answer: 1 }
+        ];
+        let usabilityState = {};
+
+        function initializeUsabilityTest() {
+            usabilityState = { currentIndex: 0, xp: 0, correctAnswersCount: 0, penaltyActive: false, playerAnswers: [] };
+            const main = document.getElementById('challenge-main');
+            const header = document.getElementById('challenge-header');
+            const title = document.createElement('h1');
+            title.className = 'text-3xl md:text-4xl text-center title-font text-green-300';
+            title.innerHTML = '🧑‍💻 Usabilidade na Prática';
+            header.insertBefore(title, header.firstChild.nextSibling);
+
+            main.innerHTML = `
+                <aside class="w-full lg:w-1/4 challenge-card-bg p-4 rounded-lg h-full max-h-[20vh] lg:max-h-full overflow-y-auto">
+                    <h2 class="title-font text-lg mb-4 text-center">📜 Exercícios</h2>
+                    <ul id="usability-list" class="space-y-2"></ul>
+                </aside>
+                <section id="usability-area" class="w-full lg:w-3/4 challenge-card-bg p-6 sm:p-8 rounded-lg flex flex-col justify-center"></section>
+            `;
+            const usabilityList = document.getElementById('usability-list');
+            usabilityChallenges.forEach((challenge, index) => {
+                const li = document.createElement('li');
+                li.id = `u-item-${index}`;
+                li.className = 'question-list-item p-2 rounded-md border-l-4 border-gray-600 bg-gray-700/50';
+                li.textContent = `${challenge.type === 'question' ? 'Pergunta' : 'Exercício'} ${index + 1}`;
+                usabilityList.appendChild(li);
+            });
+            displayUsabilityTest();
+        }
+
+        function displayUsabilityTest() {
+            const area = document.getElementById('usability-area');
+            if (usabilityState.currentIndex >= usabilityChallenges.length) { showUsabilityFinalScore(); return; }
+            
+            document.querySelectorAll('#usability-list .question-list-item').forEach(el => el.classList.remove('current'));
+            document.getElementById(`u-item-${usabilityState.currentIndex}`)?.classList.add('current');
+
+            const test = usabilityChallenges[usabilityState.currentIndex];
+            if (test.type === 'question') {
+                area.innerHTML = `<h2 class="text-xl md:text-2xl font-bold mb-6 text-center">${test.text}</h2><div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${test.options.map((option, index) => `<button data-index="${index}" class="option-btn p-4 rounded-lg text-left">${option}</button>`).join('')}</div>`;
+            } else {
+                area.innerHTML = `<h2 class="text-xl md:text-2xl font-bold mb-6 text-center">${test.question}</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">${test.options.map((option, index) => `<div data-index="${index}" class="option-btn p-4 rounded-lg cursor-pointer h-full flex items-center justify-center">${option}</div>`).join('')}</div>`;
+            }
+            document.querySelectorAll('#usability-area .option-btn').forEach(btn => btn.addEventListener('click', handleUsabilityAnswer));
+        }
+
+        function handleUsabilityAnswer(event) {
+            const selectedDiv = event.currentTarget;
+            const selectedIndex = parseInt(selectedDiv.dataset.index);
+            const correctIndex = usabilityChallenges[usabilityState.currentIndex].answer;
+            const listItem = document.getElementById(`u-item-${usabilityState.currentIndex}`);
+            document.querySelectorAll('#usability-area .option-btn').forEach(btn => { btn.style.pointerEvents = 'none'; });
+
+            if (selectedIndex === correctIndex) {
+                selectedDiv.classList.add('correct');
+                listItem.classList.remove('current'); listItem.classList.add('correct');
+                totalXp += 400; 
+                usabilityState.xp += 400;
+                usabilityState.correctAnswersCount++;
+                if (usabilityState.correctAnswersCount === 10 && !usabilityState.penaltyActive) {
+                    usabilityState.penaltyActive = true;
+                    penaltyModalText.textContent = 'Você se tornou um especialista! Agora, cada erro custará 250 XP.';
+                    penaltyModal.classList.remove('hidden');
+                }
+            } else {
+                selectedDiv.classList.add('incorrect');
+                listItem.classList.remove('current'); listItem.classList.add('incorrect');
+                document.querySelector(`#usability-area .option-btn[data-index="${correctIndex}"]`).classList.add('correct');
+                if (usabilityState.penaltyActive) {
+                    totalXp = Math.max(0, totalXp - 250);
+                    usabilityState.xp -= 250;
+                }
+            }
+            updateDashboardUI();
+            setTimeout(() => {
+                usabilityState.currentIndex++;
+                displayUsabilityTest();
+            }, 2000);
+        }
+        
+        function showUsabilityFinalScore() {
+            const area = document.getElementById('usability-area');
+            area.innerHTML = `<div class="text-center"><h2 class="text-2xl title-font text-green-300">🎉 Testes Concluídos!</h2><p class="mt-4">Você acertou ${usabilityState.correctAnswersCount} de ${usabilityChallenges.length} e seu saldo de XP foi de ${usabilityState.xp}!</p><button onclick="initializeUsabilityTest()" class="mt-6 bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Tentar Novamente</button></div>`;
+        }
+        
+        // --- LÓGICA DO CAMINHO DAS CORES ---
+        const colorChallenges = [
+            { type: 'question', text: "Qual cor é resultado da mistura de Vermelho e Amarelo?", options: ["Verde", "Roxo", "Laranja", "Marrom"], answer: 2 },
+            { type: 'question', text: "O que 'Hue' (Matiz) representa em uma cor?", options: ["A pureza da cor", "O brilho da cor", "A cor em si (ex: vermelho, verde)", "A quantidade de branco"], answer: 2 },
+            { type: 'question', text: "Cores análogas são aquelas que estão...", options: ["Opostas no círculo cromático", "Vizinhas no círculo cromático", "Em uma linha reta", "Em um triângulo"], answer: 1 },
+            { type: 'question', text: "Qual cor é frequentemente associada à calma e confiança?", options: ["Vermelho", "Amarelo", "Laranja", "Azul"], answer: 3 },
+            { type: 'exercise', question: "Qual cor é a complementar do Roxo?", options: [`<div class="w-24 h-24 bg-yellow-400 rounded-lg"></div>`, `<div class="w-24 h-24 bg-green-500 rounded-lg"></div>`], answer: 0 },
+            { type: 'question', text: "O que é uma paleta de cores 'monocromática'?", options: ["Usa apenas preto e branco", "Usa várias cores vibrantes", "Usa variações de uma única cor", "Usa cores opostas"], answer: 2 },
+            { type: 'question', text: "O que a sigla 'RGB' significa?", options: ["Red, Green, Blue", "Red, Gray, Black", "Rose, Gold, Brown", "Real, Great, Bright"], answer: 0 },
+            { type: 'question', text: "Qual sistema de cor é usado para impressão?", options: ["RGB", "HEX", "CMYK", "HSL"], answer: 2 },
+            { type: 'question', text: "O que é 'saturação'?", options: ["O quão clara ou escura é a cor", "A intensidade ou pureza da cor", "A temperatura da cor", "O nome da cor"], answer: 1 },
+            { type: 'exercise', question: "Qual texto tem melhor contraste e legibilidade?", options: [`<div class="p-4 bg-blue-800 rounded-lg"><p class="text-blue-200">Texto Legível</p></div>`, `<div class="p-4 bg-blue-800 rounded-lg"><p class="text-blue-700">Texto Ilegível</p></div>`], answer: 0 },
+            { type: 'question', text: "Uma paleta 'triádica' usa cores que estão...", options: ["Lado a lado", "Opostas", "Equidistantes em um triângulo no círculo cromático", "Em tons de cinza"], answer: 2 },
+            { type: 'question', text: "A cor verde é frequentemente associada a quê?", options: ["Raiva, perigo", "Natureza, saúde, crescimento", "Tristeza, calma", "Luxo, poder"], answer: 1 },
+            { type: 'question', text: "O que o valor 'Value' ou 'Brightness' controla?", options: ["A pureza da cor", "O quão claro ou escuro é uma cor", "A cor em si", "A transparência"], answer: 1 },
+            { type: 'question', text: "Qual é o código HEX para branco puro?", options: ["#000000", "#FFFFFF", "#111111", "#999999"], answer: 1 },
+            { type: 'exercise', question: "Qual combinação representa uma harmonia de cores análogas?", options: [`<div class="flex gap-1"><div class="w-8 h-8 bg-red-500"></div><div class="w-8 h-8 bg-green-500"></div></div>`, `<div class="flex gap-1"><div class="w-8 h-8 bg-blue-500"></div><div class="w-8 h-8 bg-blue-300"></div></div>`], answer: 1 },
+            { type: 'question', text: "Cores 'quentes' geralmente incluem:", options: ["Azul, verde, roxo", "Preto, branco, cinza", "Vermelho, laranja, amarelo", "Rosa, ciano, magenta"], answer: 2 },
+            { type: 'question', text: "O que é o 'Pantone Matching System' (PMS)?", options: ["Um software de design", "Um sistema de padronização de cores para impressão", "Uma teoria de cores", "Um tipo de tinta"], answer: 1 },
+            { type: 'question', text: "O que a 'temperatura' de uma cor se refere?", options: ["Sua popularidade", "Sua associação com calor (quente) ou frio", "Seu brilho", "Seu custo"], answer: 1 },
+            { type: 'question', text: "Qual cor é obtida ao misturar todas as cores primárias (luz)?", options: ["Preto", "Marrom", "Cinza", "Branco"], answer: 3 },
+            { type: 'exercise', question: "Qual cor é considerada 'fria'?", options: [`<div class="w-24 h-24 bg-orange-500 rounded-lg"></div>`, `<div class="w-24 h-24 bg-indigo-600 rounded-lg"></div>`], answer: 1 },
+            { type: 'question', text: "O que é uma 'tinta' (tint) em teoria das cores?", options: ["Uma cor misturada com preto", "Uma cor misturada com cinza", "Uma cor misturada com branco", "Uma cor pura"], answer: 2 },
+            { type: 'question', text: "O que é um 'tom' (tone)?", options: ["Uma cor misturada com preto", "Uma cor misturada com cinza", "Uma cor misturada com branco", "Uma cor pura"], answer: 1 },
+            { type: 'question', text: "O que é uma 'sombra' (shade)?", options: ["Uma cor misturada com preto", "Uma cor misturada com cinza", "Uma cor misturada com branco", "Uma cor pura"], answer: 0 },
+            { type: 'question', text: "Qual o impacto do contraste de cores na UI?", options: ["Apenas estético", "Afeta a legibilidade e a hierarquia visual", "Não tem impacto", "Define o tamanho dos botões"], answer: 1 },
+            { type: 'exercise', question: "Qual botão de CTA (Call to Action) tem maior destaque visual?", options: [`<button class="p-3 bg-gray-600 rounded-lg">Saiba Mais</button>`, `<button class="p-3 bg-green-500 rounded-lg">Comprar Agora</button>`], answer: 1 },
+            { type: 'question', text: "O que o modelo HSL representa?", options: ["Hue, Saturation, Lightness", "Height, Size, Length", "Hex, Shade, Luminance", "High, Standard, Low"], answer: 0 },
+            { type: 'question', text: "Por que a consistência de cores é importante no branding?", options: ["Para confundir o cliente", "Para criar reconhecimento e fortalecer a identidade da marca", "Não é importante", "Para usar todas as cores possíveis"], answer: 1 },
+            { type: 'question', text: "A cor roxa historicamente está associada a quê?", options: ["Natureza e terra", "Realeza, luxo e espiritualidade", "Perigo e alerta", "Paz e tranquilidade"], answer: 1 },
+            { type: 'question', text: "O que é a regra 60-30-10 no design de interiores, aplicável a UI?", options: ["Uma regra de tempo", "Uma regra de preço", "Uma regra de proporção de cores (60% dominante, 30% secundária, 10% de destaque)", "Uma regra de tamanho de fonte"], answer: 2 },
+            { type: 'exercise', question: "Qual paleta de cores é monocromática?", options: [`<div class="flex gap-1"><div class="w-8 h-8 bg-red-700"></div><div class="w-8 h-8 bg-red-500"></div><div class="w-8 h-8 bg-red-300"></div></div>`, `<div class="flex gap-1"><div class="w-8 h-8 bg-red-500"></div><div class="w-8 h-8 bg-blue-500"></div><div class="w-8 h-8 bg-yellow-500"></div></div>`], answer: 0 },
+        ];
+        let colorState = {};
+
+        function initializeColorChallenge() {
+            penaltyModalText.textContent = 'Neste desafio, cada acerto vale 700 XP, mas cada erro custa 850 XP. Boa sorte!';
+            penaltyModal.classList.remove('hidden');
+            
+            closeModalBtn.onclick = () => {
+                penaltyModal.classList.add('hidden');
+                startColorChallenge();
+            };
+        }
+
+        function startColorChallenge() {
+            colorState = { currentIndex: 0, xp: 0, playerAnswers: [] };
+            const main = document.getElementById('challenge-main');
+            const header = document.getElementById('challenge-header');
+            const title = document.createElement('h1');
+            title.className = 'text-3xl md:text-4xl text-center title-font text-red-300';
+            title.innerHTML = '🌈 Caminho das Cores';
+            header.insertBefore(title, header.firstChild.nextSibling);
+
+            main.innerHTML = `
+                <aside class="w-full lg:w-1/4 challenge-card-bg p-4 rounded-lg h-full max-h-[20vh] lg:max-h-full overflow-y-auto">
+                    <h2 class="title-font text-lg mb-4 text-center">📜 Desafios</h2>
+                    <ul id="colors-list" class="space-y-2"></ul>
+                </aside>
+                <section id="colors-area" class="w-full lg:w-3/4 challenge-card-bg p-6 sm:p-8 rounded-lg flex flex-col justify-center"></section>
+            `;
+            const colorsList = document.getElementById('colors-list');
+            colorChallenges.forEach((challenge, index) => {
+                const li = document.createElement('li');
+                li.id = `c-item-${index}`;
+                li.className = 'question-list-item p-2 rounded-md border-l-4 border-gray-600 bg-gray-700/50';
+                li.textContent = `${challenge.type === 'question' ? 'Pergunta' : 'Exercício'} ${index + 1}`;
+                colorsList.appendChild(li);
+            });
+            displayColorChallenge();
+        }
+
+        function displayColorChallenge() {
+            const area = document.getElementById('colors-area');
+            if (colorState.currentIndex >= colorChallenges.length) { showColorFinalScore(); return; }
+            
+            document.querySelectorAll('#colors-list .question-list-item').forEach(el => el.classList.remove('current'));
+            document.getElementById(`c-item-${colorState.currentIndex}`)?.classList.add('current');
+
+            const test = colorChallenges[colorState.currentIndex];
+            if (test.type === 'question') {
+                area.innerHTML = `<h2 class="text-xl md:text-2xl font-bold mb-6 text-center">${test.text}</h2><div class="grid grid-cols-1 sm:grid-cols-2 gap-4">${test.options.map((option, index) => `<button data-index="${index}" class="option-btn p-4 rounded-lg text-left">${option}</button>`).join('')}</div>`;
+            } else {
+                area.innerHTML = `<h2 class="text-xl md:text-2xl font-bold mb-6 text-center">${test.question}</h2><div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">${test.options.map((option, index) => `<div data-index="${index}" class="option-btn p-4 rounded-lg cursor-pointer h-full flex items-center justify-center">${option}</div>`).join('')}</div>`;
+            }
+            document.querySelectorAll('#colors-area .option-btn').forEach(btn => btn.addEventListener('click', handleColorAnswer));
+        }
+
+        function handleColorAnswer(event) {
+            const selectedDiv = event.currentTarget;
+            const selectedIndex = parseInt(selectedDiv.dataset.index);
+            const correctIndex = colorChallenges[colorState.currentIndex].answer;
+            const listItem = document.getElementById(`c-item-${colorState.currentIndex}`);
+            document.querySelectorAll('#colors-area .option-btn').forEach(btn => { btn.style.pointerEvents = 'none'; });
+
+            if (selectedIndex === correctIndex) {
+                selectedDiv.classList.add('correct');
+                listItem.classList.remove('current'); listItem.classList.add('correct');
+                totalXp += 700;
+                colorState.xp += 700;
+            } else {
+                selectedDiv.classList.add('incorrect');
+                listItem.classList.remove('current'); listItem.classList.add('incorrect');
+                document.querySelector(`#colors-area .option-btn[data-index="${correctIndex}"]`).classList.add('correct');
+                totalXp = Math.max(0, totalXp - 850);
+                colorState.xp -= 850;
+            }
+            updateDashboardUI();
+            setTimeout(() => {
+                colorState.currentIndex++;
+                displayColorChallenge();
+            }, 2000);
+        }
+
+        function showColorFinalScore() {
+            const area = document.getElementById('colors-area');
+            area.innerHTML = `<div class="text-center"><h2 class="text-2xl title-font text-red-300">🎉 Desafio das Cores Concluído!</h2><p class="mt-4">Seu saldo de XP neste desafio foi de ${colorState.xp}!</p><button onclick="initializeColorChallenge()" class="mt-6 bg-purple-600 hover:bg-purple-800 text-white font-bold py-3 px-6 rounded-lg title-font text-lg">Tentar Novamente</button></div>`;
+        }
+        
+        function updateDashboardUI() {
+            const level = Math.floor(totalXp / xpToLevelUp);
+            const currentXP = totalXp % xpToLevelUp;
+            const xpPercentage = (currentXP / xpToLevelUp) * 100;
+            
+            document.querySelectorAll('#player-xp-bar').forEach(bar => bar.style.width = `${xpPercentage}%`);
+            document.querySelectorAll('#player-xp-text').forEach(text => text.textContent = `${currentXP} / ${xpToLevelUp} XP`);
+            document.querySelectorAll('#player-level + .text-2xl').forEach(lvl => lvl.textContent = level);
+
+            updateLockStatus();
+        }
+
+        function updateLockStatus() {
+            const level = Math.floor(totalXp / xpToLevelUp);
+            
+            const usabilityCard = document.getElementById('enter-usability-btn');
+            const usabilityLock = usabilityCard.querySelector('.lock-overlay');
+            const usabilityLevelReq = parseInt(usabilityCard.dataset.levelReq);
+            if (level < usabilityLevelReq) {
+                usabilityCard.classList.add('locked');
+                usabilityLock.style.display = 'flex';
+            } else {
+                usabilityCard.classList.remove('locked');
+                usabilityLock.style.display = 'none';
+            }
+
+            const colorsCard = document.getElementById('enter-colors-btn');
+            const colorsLock = colorsCard.querySelector('.lock-overlay');
+            const colorsLevelReq = parseInt(colorsCard.dataset.levelReq);
+            if (level < colorsLevelReq) {
+                colorsCard.classList.add('locked');
+                colorsLock.style.display = 'flex';
+            } else {
+                colorsCard.classList.remove('locked');
+                colorsLock.style.display = 'none';
+            }
+        }
+
+        // Inicializa a UI do dashboard e os status de bloqueio na primeira carga
+        updateDashboardUI();
+    </script>
+</body>
+</html>
